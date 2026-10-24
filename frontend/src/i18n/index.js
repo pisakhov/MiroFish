@@ -1,26 +1,13 @@
 import { createI18n } from 'vue-i18n'
-import languages from '../../../locales/languages.json'
+import en from '../../../locales/en.json'
 
-const localeFiles = import.meta.glob('../../../locales/!(languages).json', { eager: true })
-
-const messages = {}
-const availableLocales = []
-
-for (const path in localeFiles) {
-  const key = path.match(/\/([^/]+)\.json$/)[1]
-  if (languages[key]) {
-    messages[key] = localeFiles[path].default
-    availableLocales.push({ key, label: languages[key].label })
-  }
-}
-
-const savedLocale = localStorage.getItem('locale') || 'zh'
-
+// This fork intentionally ignores previously persisted language selections.
+const availableLocales = [{ key: 'en', label: 'English' }]
 const i18n = createI18n({
   legacy: false,
-  locale: savedLocale,
-  fallbackLocale: 'zh',
-  messages
+  locale: 'en',
+  fallbackLocale: 'en',
+  messages: { en }
 })
 
 export { availableLocales }
