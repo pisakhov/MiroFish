@@ -10,7 +10,7 @@ import warnings
 warnings.filterwarnings("ignore", message=".*resource_tracker.*")
 
 from flask import Flask, request
-from flask_cors import CORS
+from .security import install_security
 
 from .config import Config
 from .utils.logger import setup_logger, get_logger
@@ -20,6 +20,7 @@ def create_app(config_class=Config):
     """Flask应用工厂函数"""
     app = Flask(__name__)
     app.config.from_object(config_class)
+    install_security(app)
     
     # 设置JSON编码：确保中文直接显示（而不是 \uXXXX 格式）
     # Flask >= 2.3 使用 app.json.ensure_ascii，旧版本使用 JSON_AS_ASCII 配置
@@ -39,8 +40,7 @@ def create_app(config_class=Config):
         logger.info("MiroFish Backend 启动中...")
         logger.info("=" * 50)
     
-    # 启用CORS
-    CORS(app, resources={r"/api/*": {"origins": "*"}})
+    # Same-origin access only; intentionally do not enable CORS.
     
     # 注册模拟进程清理函数（确保服务器关闭时终止所有模拟进程）
     from .services.simulation_runner import SimulationRunner
@@ -53,8 +53,7 @@ def create_app(config_class=Config):
     def log_request():
         logger = get_logger('mirofish.request')
         logger.debug(f"请求: {request.method} {request.path}")
-        if request.content_type and 'json' in request.content_type:
-            logger.debug(f"请求体: {request.get_json(silent=True)}")
+        # Never log request bodies: documents and prompts may be sensitive.
     
     @app.after_request
     def log_response(response):

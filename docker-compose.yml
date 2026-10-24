@@ -1,14 +1,25 @@
+# Local development only. This is NOT a Dokploy production deployment.
+# Production deployment is blocked on docs/SECURITY-REVIEW.md release gates.
 services:
   mirofish:
-    image: ghcr.io/666ghj/mirofish:latest
-    # 加速镜像（如拉取缓慢可替换上方地址）
-    # image: ghcr.nju.edu.cn/666ghj/mirofish:latest
-    container_name: mirofish
+    build: .
+    image: mirofish-private:local
     env_file:
       - .env
+    environment:
+      FLASK_DEBUG: "false"
+      EXPERIMENT_USERNAME: ${EXPERIMENT_USERNAME:?Set a private experiment username}
+      EXPERIMENT_PASSWORD: ${EXPERIMENT_PASSWORD:?Set a random password of at least 32 characters}
     ports:
-      - "3000:3000"
-      - "5001:5001"
-    restart: unless-stopped
+      - "127.0.0.1:3000:3000"
+      - "127.0.0.1:5001:5001"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    pids_limit: 256
+    mem_limit: 4g
+    cpus: 2
+    restart: "no"
     volumes:
       - ./backend/uploads:/app/backend/uploads
